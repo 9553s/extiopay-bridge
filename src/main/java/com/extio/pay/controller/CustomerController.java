@@ -1,8 +1,10 @@
+
 package com.extio.pay.controller;
 
-
+import com.extio.pay.dto.CustomerRequest;
+import com.extio.pay.dto.CustomerResponse;
 import com.extio.pay.service.CustomerService;
-import com.extio.pay.entity.Customer;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,39 +16,67 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
-
     public CustomerController(CustomerService customerService) {
         this.customerService = customerService;
     }
 
+    // Create customer
     @PostMapping
-    public Customer createCustomer(@RequestBody Customer customer){
-        return customerService.saveCustomer(customer);
+    public CustomerResponse createCustomer(
+            @RequestBody CustomerRequest request) {
+
+        return customerService.saveCustomer(request);
     }
 
+    // Get all customers
     @GetMapping
-    public List<Customer> getAllCustomers(){
+    public List<CustomerResponse> getAllCustomers() {
+
         return customerService.getAllCustomers();
     }
 
+    // Get customer by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Customer> getCustomerById(@PathVariable Long id){
+    public ResponseEntity<CustomerResponse> getCustomerById(
+            @PathVariable Long id) {
 
-        return customerService.getCustomerById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+        try {
+            return ResponseEntity.ok(
+                    customerService.getCustomerById(id)
+            );
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCustomerById(@PathVariable Long id){
-
-        if (customerService.getCustomerById(id).isEmpty()){
+        } catch (RuntimeException exception) {
             return ResponseEntity.notFound().build();
         }
-        customerService.deleteCustomer(id);
-        return ResponseEntity.noContent().build();
-
     }
 
+    // Update customer
+    @PutMapping("/{id}")
+    public ResponseEntity<CustomerResponse> updateCustomer(
+            @PathVariable Long id,
+            @RequestBody CustomerRequest request) {
 
+        try {
+            return ResponseEntity.ok(
+                    customerService.updateCustomer(id, request)
+            );
+
+        } catch (RuntimeException exception) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // Delete customer
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCustomer(
+            @PathVariable Long id) {
+
+        try {
+            customerService.deleteCustomer(id);
+            return ResponseEntity.noContent().build();
+
+        } catch (RuntimeException exception) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
